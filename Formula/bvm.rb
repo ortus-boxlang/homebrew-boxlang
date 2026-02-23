@@ -16,8 +16,9 @@ class Bvm < Formula
     inreplace "src/bvm.sh", "@build.version@", version
     inreplace "src/install-bvm.sh", "@build.version@", version
 
-    # Install scripts and helpers into libexec so relative paths resolve correctly
-    libexec.install Dir["src/*"]
+    # Install only BVM scripts and shared helpers into libexec so relative paths resolve correctly
+    bvm_files = Dir["src/*"].reject { |f| File.basename(f).start_with?("boxlang") }
+    libexec.install bvm_files
 
     # Create thin wrappers in bin so the commands appear in PATH
     (bin/"bvm").write <<~EOS
