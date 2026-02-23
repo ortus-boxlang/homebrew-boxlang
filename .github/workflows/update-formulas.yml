@@ -31,6 +31,7 @@ jobs:
         id: release
         run: |
           LATEST_TAG=$(curl -fsSL \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/ortus-boxlang/boxlang-quick-installer/releases/latest" \
             | jq -r '.tag_name')
           # Strip the leading 'v' for the version number
