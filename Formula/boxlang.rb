@@ -15,8 +15,8 @@ class Boxlang < Formula
     # Replace the build-time version placeholder with the actual release version
     inreplace "src/install-boxlang.sh", "@build.version@", version
 
-    # Install scripts and helpers into libexec so relative paths resolve correctly
-    libexec.install Dir["src/*"]
+    # Install only BoxLang-related scripts into libexec so relative paths resolve correctly
+    libexec.install "src/install-boxlang.sh", "src/install-bx-module.sh", "src/install-bx-site.sh"
 
     # Create thin wrappers in bin so the commands appear in PATH
     (bin/"install-boxlang").write <<~EOS
