@@ -1,0 +1,101 @@
+name: Update Homebrew Formulas
+
+on:
+  # Run daily to catch new installer releases
+  schedule:
+    - cron: "0 6 * * *"
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+  # Allow external repositories to trigger this workflow via repository_dispatch
+  # The ortus-boxlang/boxlang-quick-installer release workflow can call:
+  #   curl -X POST https://api.github.com/repos/ortus-boxlang/homebrew-boxlang/dispatches \
+  #     -H "Authorization: token $TOKEN" \
+  #     -d '{"event_type":"installer-released"}'
+  repository_dispatch:
+    types: [installer-released]
+
+jobs:
+  update-formulas:
+    name: Check and Update Formulas
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout tap repository
+        uses: actions/checkout@v4
+
+      - name: Get latest installer release from GitHub
+        id: release
+        run: |
+          LATEST_TAG=$(curl -fsSL \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/ortus-boxlang/boxlang-quick-installer/releases/latest" \
+            | jq -r '.tag_name')
+          # Strip the leading 'v' for the version number
+          LATEST_VERSION="${LATEST_TAG#v}"
+          echo "tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${LATEST_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Latest installer release: ${LATEST_TAG}"
+
+      - name: Check current formula version
+        id: current
+        run: |
+          CURRENT_VERSION=$(grep -oP '(?<=version ")[\d.]+' Formula/bvm.rb | head -1)
+          echo "version=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Current formula version: ${CURRENT_VERSION}"
+
+      - name: Download release tarball and compute SHA256
+        if: steps.release.outputs.version != steps.current.outputs.version
+        id: checksum
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          VERSION="${{ steps.release.outputs.version }}"
+          URL="https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/${TAG}.tar.gz"
+          echo "Downloading ${URL}"
+          curl -fsSL "${URL}" -o /tmp/installer.tar.gz
+          SHA256=$(sha256sum /tmp/installer.tar.gz | cut -d' ' -f1)
+          echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "SHA256: ${SHA256}"
+
+      - name: Update bvm.rb
+        if: steps.release.outputs.version != steps.current.outputs.version
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          SHA256="${{ steps.checksum.outputs.sha256 }}"
+          TAG="${{ steps.release.outputs.tag }}"
+          URL="https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/${TAG}.tar.gz"
+
+          sed -i "s|url \".*\"|url \"${URL}\"|" Formula/bvm.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/bvm.rb
+          sed -i "s|version \".*\"|version \"${VERSION}\"|" Formula/bvm.rb
+
+      - name: Update boxlang.rb
+        if: steps.release.outputs.version != steps.current.outputs.version
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          SHA256="${{ steps.checksum.outputs.sha256 }}"
+          TAG="${{ steps.release.outputs.tag }}"
+          URL="https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/${TAG}.tar.gz"
+
+          sed -i "s|url \".*\"|url \"${URL}\"|" Formula/boxlang.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/boxlang.rb
+          sed -i "s|version \".*\"|version \"${VERSION}\"|" Formula/boxlang.rb
+
+      - name: Commit and push updated formulas
+        if: steps.release.outputs.version != steps.current.outputs.version
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: GitHub Actions
+          author_email: github-actions[bot]@users.noreply.github.com
+          message: "chore: update formulas to installer v${{ steps.release.outputs.version }}"
+          add: |
+            Formula/bvm.rb
+            Formula/boxlang.rb
+
+      - name: No update needed
+        if: steps.release.outputs.version == steps.current.outputs.version
+        run: echo "Formulas are already at the latest version (${{ steps.current.outputs.version }}). No update needed."
