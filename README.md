@@ -1,4 +1,4 @@
-# homebrew-boxlang
+# BoxLang For HomeBrew
 
 🥊 The official Homebrew tap for the BoxLang JVM Language!
 
