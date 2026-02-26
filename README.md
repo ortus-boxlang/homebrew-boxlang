@@ -125,4 +125,3 @@ latest installer version.
 - 🚀 [BoxLang Quick Installer](https://github.com/ortus-boxlang/boxlang-quick-installer)
 - 💬 [Community](https://community.ortussolutions.com/)
 - 🐛 [Issue Tracker](https://github.com/ortus-boxlang/boxlang/issues)
-
