@@ -1,9 +1,9 @@
 class Bvm < Formula
   desc "BoxLang Version Manager - install and manage multiple BoxLang versions"
   homepage "https://boxlang.io"
-  url "https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/v1.27.0.tar.gz"
-  sha256 "84f75fa3c22f64ed912737cc3b9434c941e3be8b501537a18e4d347d9055be7a"
-  version "1.27.0"
+  url "https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/v1.29.0.tar.gz"
+  sha256 "e201076f02bd1386b7c9dbdd08f5fcbdacbcace763f32b2517252b24ce072978"
+  version "1.29.0"
   license "Apache-2.0"
 
   depends_on "curl"
