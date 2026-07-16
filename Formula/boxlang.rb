@@ -1,9 +1,9 @@
 class Boxlang < Formula
   desc "BoxLang - A next-generation multi-runtime dynamic language for the JVM"
   homepage "https://boxlang.io"
-  url "https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/v1.29.0.tar.gz"
-  sha256 "e201076f02bd1386b7c9dbdd08f5fcbdacbcace763f32b2517252b24ce072978"
-  version "1.29.0"
+  url "https://github.com/ortus-boxlang/boxlang-quick-installer/archive/refs/tags/v1.30.0.tar.gz"
+  sha256 "af32b059d63391a78e63d993abad45c57908064bf2154fc9c2ca03db8f33ed6e"
+  version "1.30.0"
   license "Apache-2.0"
 
   depends_on "curl"
